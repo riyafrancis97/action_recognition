@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Mar 27 06:02:05 2019
+Created on Wed Apr 10 04:23:29 2019
 
 @author: CCF
 """
@@ -10,8 +10,9 @@ import numpy as np
 import os
 import pickle
 
-#from sklearn.svm import SVC
+from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import roc_curve, auc
 
 def make_dataset(dataset):
     X = []
@@ -32,16 +33,30 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     dataset_bow = args.dataset_bow
-   # C = args.C
+    C = args.C
     output = args.output
 
     # Load and make dataset.
     dataset = pickle.load(open(dataset_bow, "rb"))
     X, Y = make_dataset(dataset)
 
-
-    
-    clf = RandomForestClassifier(n_estimators=32)
-    
-    clf.fit(X,Y)
-pickle.dump(clf, open(output, "wb"))
+    # Train SVM and save to file.
+    """clf = SVC(C=C, kernel="linear", verbose=True)
+    clf.fit(X, Y)"""
+    n_estimators = [1, 2, 4, 8, 16, 32, 64, 100, 200]
+    test_results = []
+    for estimator in n_estimators:
+        clf= RandomForestClassifier(n_estimators=32)
+        clf.fit(X,Y)
+        for video in dataset:
+            predicted = clf.predict([video["features"]])
+            false_positive_rate, true_positive_rate, thresholds = roc_curve(video["category"],predicted)
+            
+            
+            """roc_auc = auc(false_positive_rate, true_positive_rate)
+            test_results.append(roc_auc)"""
+        
+            #pickle.dump(clf, open(output, "wb"))
+           # CATEGORIES = ["boxing", "handclapping", "handwaving", "jogging", "running", 
+       # "walking"]
+           
